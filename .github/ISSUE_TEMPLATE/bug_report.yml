@@ -1,0 +1,94 @@
+name: Bug report
+description: Report a reproducible local-irsa problem.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include AWS credentials, ServiceAccount tokens, web identity tokens, secret access keys, personal AWS account IDs, personal profile names, bucket names, or issuer URLs. Replace them with placeholders such as `<accountID>`, `<profile>`, `<bucket>`, and `<issuerURL>`.
+  - type: input
+    id: version
+    attributes:
+      label: local-irsa version
+      description: Use the release tag, commit SHA, or Go tool version.
+      placeholder: v0.0.0 or <commitSHA>
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: macOS 15.0, Ubuntu 24.04, Windows 11
+    validations:
+      required: true
+  - type: input
+    id: go-version
+    attributes:
+      label: Go version
+      placeholder: go version go1.26.2 darwin/arm64
+    validations:
+      required: true
+  - type: input
+    id: kubernetes-version
+    attributes:
+      label: Kubernetes version
+      placeholder: v1.31.0
+    validations:
+      required: true
+  - type: input
+    id: kind-version
+    attributes:
+      label: kind version
+      placeholder: kind v0.24.0
+    validations:
+      required: true
+  - type: dropdown
+    id: kubectl-context
+    attributes:
+      label: kubectl context type
+      options:
+        - kind
+        - minikube
+        - k3d
+        - other local cluster
+        - remote cluster
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include commands with secrets and personal values redacted.
+      placeholder: |
+        1. Run `go tool local-irsa init --name <name> --region <region> --profile <profile>`
+        2. Merge the snippet into kind config.
+        3. Run `go tool local-irsa install --name <name> --profile <profile>`
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Redacted error output
+      description: Paste only output that has been checked for credentials, tokens, personal account IDs, profile names, bucket names, and issuer URLs.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Add related AWS, S3, IAM, or Kubernetes assumptions with sensitive values redacted.

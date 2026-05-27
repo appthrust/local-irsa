@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest a local-irsa workflow or behavior change.
+title: "feature: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include AWS credentials, ServiceAccount tokens, web identity tokens, secret access keys, personal AWS account IDs, personal profile names, bucket names, or issuer URLs. Use placeholders such as `<accountID>`, `<profile>`, `<bucket>`, and `<issuerURL>`.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the user problem or workflow gap.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-workflow
+    attributes:
+      label: Proposed workflow
+      description: Explain how you want to use local-irsa.
+      placeholder: |
+        local-irsa ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe workarounds or other tools you considered.
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: AWS and Kubernetes assumptions
+      description: Include relevant IAM, S3, STS, Kubernetes, kind, cert-manager, or kubectl assumptions with sensitive values redacted.
+    validations:
+      required: true
+  - type: textarea
+    id: cleanup
+    attributes:
+      label: Cleanup and safety impact
+      description: Explain any expected changes to AWS resources, Kubernetes resources, public S3 issuer objects, or cleanup behavior.

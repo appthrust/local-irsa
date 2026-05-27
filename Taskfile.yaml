@@ -1,0 +1,66 @@
+version: "3"
+
+vars:
+  DEV_CLUSTER: '{{default "local-irsa-dev" .LOCAL_IRSA_DEV_CLUSTER}}'
+  CERT_MANAGER_VERSION: v1.20.2
+
+tasks:
+  install:
+    desc: Download Go module dependencies.
+    cmds:
+      - go mod download
+
+  check:
+    desc: Run Go tests and vet checks.
+    cmds:
+      - go test ./...
+      - go vet ./...
+
+  up:
+    desc: Create or reuse a kind cluster from kind.yaml.
+    cmds:
+      - |
+        if [ ! -f kind.yaml ]; then
+          echo "kind.yaml is required for task up." >&2
+          echo "Create it with:" >&2
+          echo "  cp kind.dist.yaml kind.yaml" >&2
+          echo "Then run local-irsa init and merge the printed kind config snippet into kind.yaml when you need local-irsa OIDC settings." >&2
+          exit 1
+        fi
+      - |
+        if kind get clusters | grep -qx "{{.DEV_CLUSTER}}"; then
+          echo "kind cluster already exists: {{.DEV_CLUSTER}}"
+        else
+          kind create cluster --config kind.yaml
+        fi
+      - kubectl --context "kind-{{.DEV_CLUSTER}}" apply -f "https://github.com/cert-manager/cert-manager/releases/download/{{.CERT_MANAGER_VERSION}}/cert-manager.yaml"
+      - |
+        if ! kubectl --context "kind-{{.DEV_CLUSTER}}" wait --for=condition=Established --timeout=120s crd/certificates.cert-manager.io; then
+          echo "cert-manager CRD did not become Established within 120 seconds. Check pod status with:" >&2
+          echo "  kubectl --context kind-{{.DEV_CLUSTER}} -n cert-manager get pods" >&2
+          kubectl --context "kind-{{.DEV_CLUSTER}}" -n cert-manager get pods >&2 || true
+          exit 1
+        fi
+      - |
+        for deployment in cert-manager cert-manager-cainjector cert-manager-webhook; do
+          if ! kubectl --context "kind-{{.DEV_CLUSTER}}" -n cert-manager rollout status "deployment/${deployment}" --timeout=120s; then
+            echo "cert-manager deployment ${deployment} did not become Available within 120 seconds. Check pod status with:" >&2
+            echo "  kubectl --context kind-{{.DEV_CLUSTER}} -n cert-manager get pods" >&2
+            kubectl --context "kind-{{.DEV_CLUSTER}}" -n cert-manager get pods >&2 || true
+            exit 1
+          fi
+        done
+      - |
+        echo "kind config: kind.yaml"
+        echo "kind context: kind-{{.DEV_CLUSTER}}"
+        echo "cert-manager: {{.CERT_MANAGER_VERSION}}"
+
+  down:
+    desc: Remove the local development kind cluster.
+    cmds:
+      - |
+        if kind get clusters | grep -qx "{{.DEV_CLUSTER}}"; then
+          kind delete cluster --name "{{.DEV_CLUSTER}}"
+        else
+          echo "kind cluster not found: {{.DEV_CLUSTER}}"
+        fi

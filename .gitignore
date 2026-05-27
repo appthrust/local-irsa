@@ -1,0 +1,10 @@
+/.DS_Store
+/.devbox/
+/.local-irsa-dev/
+/.impl/
+/.env
+/kind.yaml
+/local-irsa
+/coverage.out
+/dist/
+*.test
